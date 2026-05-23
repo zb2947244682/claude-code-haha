@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { UIAttachment } from '../../types/chat'
 import { AttachmentGallery } from './AttachmentGallery'
 import { MessageActionBar, type MessageBranchAction } from './MessageActionBar'
@@ -8,7 +9,7 @@ type Props = {
   branchAction?: MessageBranchAction
 }
 
-export function UserMessage({ content, attachments, branchAction }: Props) {
+export const UserMessage = memo(function UserMessage({ content, attachments, branchAction }: Props) {
   const hasText = content.trim().length > 0
 
   return (
@@ -45,4 +46,4 @@ export function UserMessage({ content, attachments, branchAction }: Props) {
       </div>
     </div>
   )
-}
+})

@@ -1638,6 +1638,33 @@ export function MessageList({ sessionId, compact = false }: MessageListProps = {
     }
   }, [addToast, branchSession, branchingMessageId, resolvedSessionId, t])
 
+  // Pre-compute per-message branchAction + toolResult lookups so MessageBlock's
+  // memo barrier is not broken by inline object literals on every render.
+  const branchActionByMessageId = useMemo(() => {
+    if (branchableMessageTargets.size === 0) {
+      return new Map<string, { label: string; loading: boolean; onBranch: () => void }>()
+    }
+    const result = new Map<string, { label: string; loading: boolean; onBranch: () => void }>()
+    const label = t('chat.branchFromHere')
+    for (const [uiMessageId, target] of branchableMessageTargets) {
+      result.set(uiMessageId, {
+        label,
+        loading: branchingMessageId === target.uiMessageId,
+        onBranch: () => { void handleBranchMessage(target) },
+      })
+    }
+    return result
+  }, [branchableMessageTargets, branchingMessageId, handleBranchMessage, t])
+
+  const toolResultByToolUseId = useMemo(() => {
+    if (toolResultMap.size === 0) return new Map<string, { content: unknown; isError: boolean }>()
+    const result = new Map<string, { content: unknown; isError: boolean }>()
+    for (const [toolUseId, toolResult] of toolResultMap) {
+      result.set(toolUseId, { content: toolResult.content, isError: toolResult.isError })
+    }
+    return result
+  }, [toolResultMap])
+
   const renderTranscriptItem = (item: RenderItem, index: number) => {
     const cardsForItem = turnCardsByRenderIndex.get(index) ?? []
 
@@ -1662,23 +1689,10 @@ export function MessageList({ sessionId, compact = false }: MessageListProps = {
             agentTaskNotifications={agentTaskNotifications}
             toolResult={
               item.message.type === 'tool_use'
-                ? (() => {
-                    const result = toolResultMap.get(item.message.toolUseId)
-                    return result ? { content: result.content, isError: result.isError } : null
-                  })()
+                ? toolResultByToolUseId.get(item.message.toolUseId) ?? null
                 : null
             }
-            branchAction={
-              (() => {
-                const branchTarget = branchableMessageTargets.get(item.message.id)
-                if (!branchTarget) return undefined
-                return {
-                  label: t('chat.branchFromHere'),
-                  loading: branchingMessageId === branchTarget.uiMessageId,
-                  onBranch: () => { void handleBranchMessage(branchTarget) },
-                }
-              })()
-            }
+            branchAction={branchActionByMessageId.get(item.message.id)}
           />
         )}
 

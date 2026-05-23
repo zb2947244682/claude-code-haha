@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { MarkdownRenderer } from '../markdown/MarkdownRenderer'
 import { MessageActionBar, type MessageBranchAction } from './MessageActionBar'
 import { InlineImageGallery } from './InlineImageGallery'
@@ -8,7 +9,7 @@ type Props = {
   branchAction?: MessageBranchAction
 }
 
-export function AssistantMessage({ content, isStreaming, branchAction }: Props) {
+export const AssistantMessage = memo(function AssistantMessage({ content, isStreaming, branchAction }: Props) {
   if (!content.trim()) return null
 
   const documentLayout = shouldUseDocumentLayout(content)
@@ -43,7 +44,7 @@ export function AssistantMessage({ content, isStreaming, branchAction }: Props) 
       </div>
     </div>
   )
-}
+})
 
 function shouldUseDocumentLayout(content: string) {
   const normalized = content.trim()

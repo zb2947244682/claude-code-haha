@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { BookMarked, ChevronDown, ChevronRight, Settings } from 'lucide-react'
 import { ToolCallBlock } from './ToolCallBlock'
 import { MarkdownRenderer } from '../markdown/MarkdownRenderer'
@@ -108,7 +108,7 @@ function hasUnresolvedToolCalls(
   )
 }
 
-export function ToolCallGroup({
+export const ToolCallGroup = memo(function ToolCallGroup({
   toolCalls,
   resultMap,
   childToolCallsByParent,
@@ -159,7 +159,7 @@ export function ToolCallGroup({
       isStreaming={isStreaming}
     />
   )
-}
+})
 
 function ToolCallGroupContent({
   toolCalls,
